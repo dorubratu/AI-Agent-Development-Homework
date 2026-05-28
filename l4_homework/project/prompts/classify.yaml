@@ -1,0 +1,17 @@
+name: classify
+version: "1.0.0"
+description: >
+  Classifică un document ca invoice / contract / other, plus un rezumat scurt.
+  Folosit de StructuredExtractor.classify().
+
+prompt: |
+  Clasifici documentul de mai jos într-una din categoriile:
+  - invoice  → factură, bon fiscal, document de plată
+  - contract → contract, acord cadru, addendum
+  - other    → orice altceva (raport, scrisoare, notiță, etc.)
+
+  Numele fișierului: {{ filename }}
+
+  Apelează tool-ul set_classification cu:
+  - doc_type: una din valorile de mai sus (lowercase)
+  - summary: rezumat scurt (1 propoziție) în limba documentului

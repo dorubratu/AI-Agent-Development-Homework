@@ -1,0 +1,22 @@
+name: extract_contract
+version: "1.0.0"
+description: >
+  Extrage câmpurile principale dintr-un contract. Folosit de
+  StructuredExtractor.extract() când doc_type == 'contract'.
+
+prompt: |
+  Ești un expert în analiză contractuală. Extrage câmpurile principale ale
+  contractului de mai jos.
+
+  Fișier sursă: {{ filename }}
+
+  Apelează tool-ul set_contract_fields cu valorile identificate.
+  - parties: listă de denumiri legale ale părților semnatare.
+  - effective_date: data intrării în vigoare (YYYY-MM-DD dacă e posibil).
+  - termination_clause: REZUMAT al clauzei de reziliere (1-2 propoziții),
+    nu citatul integral.
+  - notice_period_days: dacă există un preaviz exprimat în zile, pune-l aici.
+  - payment_terms: rezumat al condițiilor de plată / penalităților.
+  - governing_law: jurisdicția aplicabilă (ex: "România", "New York").
+
+  Nu inventa. Lasă null pentru câmpurile care nu apar în text.

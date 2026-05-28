@@ -1,0 +1,40 @@
+FACTURĂ FISCALĂ
+Seria FAC, Nr. 2026-042
+Data emiterii: 31.01.2026
+Data scadenței: 02.03.2026
+
+FURNIZOR:
+SC Acme Software SRL
+Str. Victoriei nr. 5, București
+CUI: RO12345678
+Reg. Com.: J40/1234/2018
+IBAN: RO12 ACME 0000 0000 1234 5678
+Banca: Acme Bank
+
+CLIENT:
+SC Beta Industries SA
+Str. Memorandumului nr. 28, Cluj-Napoca
+CUI: RO87654321
+Reg. Com.: J12/5678/2019
+
+
+DETALII:
+
+Nr.  Descriere                                  Cant.   Preț unitar    Total
+---  -----------------------------------------  -----   -----------    ---------
+ 1   Dezvoltare module backend (ianuarie 2026)    1      6.500,00 EUR   6.500,00 EUR
+ 2   Dezvoltare interfață administrare            1      2.800,00 EUR   2.800,00 EUR
+ 3   Mentenanță și suport tehnic                  1        700,00 EUR     700,00 EUR
+
+
+Subtotal:                                                              10.000,00 EUR
+TVA 19%:                                                                1.900,00 EUR
+TOTAL DE PLATĂ:                                                        11.900,00 EUR
+
+
+Termen de plată: 30 de zile de la data emiterii.
+Penalități întârziere: 0,1% pe zi din suma neachitată.
+
+Document emis în baza Contractului nr. 042/2026.
+
+Furnizor: Maria Popescu, Administrator

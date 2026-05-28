@@ -1,0 +1,62 @@
+CONTRACT DE PRESTĂRI SERVICII NR. 042 / 2026
+
+Încheiat astăzi, 10 ianuarie 2026, între:
+
+PRESTATOR: SC Acme Software SRL, cu sediul în București, str. Victoriei nr. 5,
+CUI RO12345678, reprezentată prin Maria Popescu, în calitate de administrator,
+
+și
+
+BENEFICIAR: SC Beta Industries SA, cu sediul în Cluj-Napoca, str. Memorandumului
+nr. 28, CUI RO87654321, reprezentată prin Andrei Ionescu, în calitate de
+director general.
+
+
+ART. 1 - OBIECTUL CONTRACTULUI
+Prestatorul se obligă să furnizeze servicii de dezvoltare software pentru
+platforma intranet a Beneficiarului, conform specificațiilor tehnice anexate.
+
+ART. 2 - DURATA CONTRACTULUI
+Prezentul contract intră în vigoare la data de 15 ianuarie 2026 și este
+valabil până la data de 15 ianuarie 2027, cu posibilitatea de prelungire
+prin act adițional.
+
+ART. 3 - PREȚUL ȘI MODALITATEA DE PLATĂ
+Valoarea totală a contractului este de 120.000 EUR + TVA, plătibilă în 12
+rate lunare egale de 10.000 EUR + TVA. Facturile se emit la sfârșitul fiecărei
+luni calendaristice, cu termen de plată de 30 de zile de la data emiterii.
+
+ART. 4 - PENALITĂȚI
+Pentru întârzieri la plată, Beneficiarul va datora penalități de 0,1% pe zi
+din suma neachitată, fără a putea depăși valoarea principalului. Pentru
+neîndeplinirea obligațiilor de către Prestator, Beneficiarul are dreptul la
+penalități de 0,05% pe zi din valoarea lunară a contractului.
+
+ART. 5 - REZILIEREA CONTRACTULUI
+5.1. Oricare dintre părți poate denunța unilateral prezentul contract cu un
+preaviz scris de 30 de zile calendaristice, fără invocarea unui motiv.
+
+5.2. Contractul se reziliază de plin drept, fără punere în întârziere, în
+cazul în care una dintre părți nu își îndeplinește obligațiile principale
+mai mult de 60 de zile consecutive.
+
+5.3. La rezilierea contractului, Prestatorul va preda Beneficiarului toate
+livrabilele finalizate până la data rezilierii, iar Beneficiarul va achita
+contravaloarea muncii prestate până la acea dată.
+
+ART. 6 - CONFIDENȚIALITATE
+Părțile se obligă să păstreze confidențialitatea tuturor informațiilor
+schimbate în executarea prezentului contract, pe o durată de 5 ani de la
+încetarea contractului.
+
+ART. 7 - LITIGII ȘI LEGE APLICABILĂ
+Prezentul contract este guvernat de legea română. Orice litigiu se va
+soluționa pe cale amiabilă, iar în caz de imposibilitate, prin instanțele
+competente din București.
+
+
+Semnat în două exemplare, câte unul pentru fiecare parte.
+
+PRESTATOR                              BENEFICIAR
+SC Acme Software SRL                   SC Beta Industries SA
+Maria Popescu                          Andrei Ionescu

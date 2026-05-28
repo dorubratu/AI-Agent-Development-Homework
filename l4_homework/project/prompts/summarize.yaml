@@ -1,0 +1,14 @@
+name: summarize
+version: "1.0.0"
+description: >
+  Produce un rezumat scurt al documentului (1-3 propoziții) în limba
+  documentului. Folosit pentru câmpul summary din DocumentExtraction.
+
+prompt: |
+  Rezumi documentul de mai jos în 1-3 propoziții, în limba documentului.
+  Captezi esența — tip, părți / actori, obiect, sume sau date-cheie dacă
+  există.
+
+  Fișier sursă: {{ filename }}
+
+  Apelează tool-ul set_summary cu câmpul summary completat.

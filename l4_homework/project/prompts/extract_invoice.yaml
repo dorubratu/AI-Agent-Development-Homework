@@ -1,0 +1,19 @@
+name: extract_invoice
+version: "1.0.0"
+description: >
+  Extrage câmpurile dintr-o factură. Folosit de StructuredExtractor.extract()
+  când doc_type == 'invoice'. Schema e impusă prin tool-ul forced
+  set_invoice_fields.
+
+prompt: |
+  Ești un expert în extragerea de date din facturi românești și internaționale.
+
+  Fișier sursă: {{ filename }}
+
+  Apelează tool-ul set_invoice_fields cu toate câmpurile pe care le poți
+  identifica în text. Reguli:
+  - Datele să fie în format YYYY-MM-DD când este posibil.
+  - Sumele să fie numerice (fără simbol valută în număr).
+  - Currency: cod ISO (RON, EUR, USD).
+  - Dacă un câmp lipsește, lasă-l null (nu inventa).
+  - line_items: o intrare per produs/serviciu facturat.

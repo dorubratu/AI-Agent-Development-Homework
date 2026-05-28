@@ -1,0 +1,34 @@
+ACORD DE CONFIDENȚIALITATE (NDA)
+
+Părți semnatare:
+1. SC Acme Software SRL (Partea Divulgatoare)
+2. SC Gamma Consulting SRL (Partea Primitoare)
+
+Data: 1 februarie 2026.
+
+OBIECT
+Părțile convin asupra protejării informațiilor confidențiale schimbate în
+cadrul unei posibile colaborări privind dezvoltarea unei platforme SaaS.
+
+CONFIDENȚIALITATE
+Partea Primitoare se obligă:
+- să nu divulge informațiile către terți fără acordul scris al
+  Părții Divulgatoare;
+- să folosească informațiile exclusiv pentru evaluarea colaborării;
+- să restituie sau să distrugă toate materialele primite la cererea
+  Părții Divulgatoare.
+
+DURATĂ ȘI REZILIERE
+Acordul este valabil pe o perioadă de 24 de luni de la semnare. Oricare
+parte poate denunța unilateral acordul cu un preaviz de 15 zile.
+Obligațiile de confidențialitate supraviețuiesc rezilierii pe o durată
+suplimentară de 3 ani.
+
+PENALITĂȚI
+Încălcarea obligațiilor de confidențialitate atrage plata de daune-interese
+într-un cuantum minim de 50.000 EUR per incident, fără a aduce atingere
+dreptului Părții Divulgatoare de a solicita daune suplimentare.
+
+LEGE APLICABILĂ
+Acordul este guvernat de legea română. Litigiile se vor soluționa de
+instanțele din București.
