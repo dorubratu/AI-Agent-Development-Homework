@@ -1,4 +1,4 @@
-# Document Analyst cu RAG (L3 + L4)
+# Document Analyst cu RAG
 
 Pipeline de ingestion (load → chunk → extract structurat → embed → store)
 și agent ReAct conectat la un tool RAG peste pgvector. Continuă agentul din
@@ -13,9 +13,9 @@ storage și retrieval.
 - **Embeddings**: `sentence-transformers / paraphrase-multilingual-MiniLM-L12-v2`
   (384 dim, suportă bine româna).
 - **Storage**: PostgreSQL 16 + extensia `pgvector`, prin Docker.
-- **ORM + migrații**: SQLAlchemy 2.0 + Alembic.
+- **ORM + migrations**: SQLAlchemy 2.0 + Alembic.
 - **Index ANN**: HNSW cu `vector_cosine_ops` (m=16, ef_construction=64),
-  creat la prima migrație.
+  creat la prima migrare.
 - **Loaders**: `pypdf` (PDF), `docx2txt` (DOCX), citire directă (TXT/MD).
 - **Chunker**: `langchain-text-splitters.RecursiveCharacterTextSplitter`
   (default 800/100).
@@ -62,29 +62,16 @@ project/
 ```bash
 cd l4_homework/project
 
-# 1. Postgres + pgvector
 docker compose up -d
-docker compose ps                       # health=healthy
+docker compose ps       # check health
 
-# 2. Python env
 python -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
 
-# 3. Variabile
-cp .env.example .env
-# editează .env și pune ANTHROPIC_API_KEY
+cp .env.example .env    # add ANTHROPIC_API_KEY to .env
 
-# 4. Migrare schema
 alembic upgrade head
 ```
-
-Migrația 0001 creează:
-- extensia `vector`
-- tabelele `documents` și `document_chunks` (FK + cascade delete)
-- index unic pe `(document_id, chunk_index)`
-- index HNSW pe `document_chunks.embedding` cu `vector_cosine_ops`
-
-## Rulare
 
 ### Demo end-to-end
 
@@ -92,20 +79,19 @@ Migrația 0001 creează:
 python demo.py
 ```
 
-Demo-ul ingestă `sample_docs/` (contract, factură, NDA) și pune agentului 4
-întrebări de test. Rularea e idempotentă pe filename: a doua rulare va sări
-peste documentele deja încărcate.
+Demo proceseazǎ `sample_docs/` (contract, factură, NDA) și pune agentului 4
+întrebări de test. A doua rulare va sări peste documentele deja încărcate.
 
-### Ingestă manuală
+### Manual
 
 ```bash
-python pipeline.py sample_docs/                  # un folder
+python pipeline.py sample_docs/                  # un folder 
 python pipeline.py path/to/contract.pdf          # un fișier
-python pipeline.py a.pdf b.docx c.txt            # mai multe
+python pipeline.py a.pdf b.docx c.txt            # mai multe documente
 ```
 
 Pentru fiecare document se salvează un dump JSON cu metadatele extrase în
-`output/<stem>.json` (fără full content — doar invoice/contract/summary).
+`output/<stem>.json` (fără full content, doar invoice/contract/summary).
 
 ### Agent
 
@@ -122,7 +108,7 @@ agent = DocumentAnalystAgent()
 print(agent.run("Ce clauze de reziliere avem?", verbose=True))
 ```
 
-## Cum funcționează — pe componente
+## Componente
 
 ### 1. Extraction Pipeline (L3)
 
@@ -196,30 +182,10 @@ Pentru NDA (nda_acord.txt, chunk 1), preavizul este de 15 zile, dar
 obligațiile de confidențialitate supraviețuiesc rezilierii încă 3 ani.
 ```
 
-## Note de design
-
-- **Anthropic vs Gemini**: Lectorul a folosit Gemini cu `response_schema`
-  în slide-uri. Am ales Anthropic pentru continuitate cu L1-L2 — același
-  client, același API, același pattern de cache. Trick-ul cu
-  `tool_choice = "tool"` produce același efect ca `response_schema`:
-  output forțat conform unei scheme JSON.
-- **Migrații Alembic vs `create_all`**: Am preferat Alembic + migrație
-  explicită (slide 55) pentru că `Base.metadata.create_all()` nu creează
-  extensia `vector` și nici indexul HNSW — și ambele sunt critice.
-- **HNSW de la prima migrație**: indexul HNSW se creează inline în
-  `0001_initial_schema.py`, nu lazy. Pentru un dataset de produse real
-  aș folosi `CREATE INDEX CONCURRENTLY` într-o migrație separată ca să nu
-  blochez tabela, dar pentru homework-ul ăsta varianta inline e mai
-  ușor de verificat.
-- **Threshold 0.35**: cu `paraphrase-multilingual-MiniLM-L12-v2`,
-  scorurile pe limba română stau de obicei între 0.4 și 0.7 pentru
-  query-uri relevante. Threshold-ul e configurabil prin tool, deci LLM-ul
-  îl poate ajusta la nevoie.
-
 ## Reset complet
 
 ```bash
-docker compose down -v   # șterge volumul → pierzi datele
+docker compose down -v  
 docker compose up -d
 alembic upgrade head
 ```
