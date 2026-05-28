@@ -1,0 +1,19 @@
+name: extract
+version: "1.0.0"
+description: >
+  Prompt de extracție structurată: extrage entități și fapte cheie dintr-un
+  text liber. Util pentru post-procesarea răspunsurilor unor tool-uri.
+
+prompt: |
+  Extrage din textul de mai jos următoarele câmpuri:
+  {% for f in fields %}
+  - {{ f }}
+  {% endfor %}
+
+  Text sursă:
+  """
+  {{ text }}
+  """
+
+  Format de răspuns: JSON valid cu exact câmpurile cerute. Dacă o valoare
+  nu poate fi determinată, folosește null.

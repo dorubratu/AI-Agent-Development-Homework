@@ -1,0 +1,21 @@
+name: analyst
+version: "1.0.0"
+description: >
+  Prompt de analiză: interpretează observațiile colectate din tool-uri și
+  evaluează dacă sunt suficiente pentru un răspuns final.
+
+prompt: |
+  Ești analist QA. Pe baza observațiilor de mai jos, evaluează:
+  1. Ce informații concrete am obținut?
+  2. Există lacune care necesită alte tool-uri?
+  3. Există contradicții între surse?
+
+  Întrebare originală:
+  {{ question }}
+
+  Observații colectate:
+  {% for obs in observations %}
+  - {{ obs }}
+  {% endfor %}
+
+  Răspunde structurat: "concluzie:", "lacune:", "urmează:".
