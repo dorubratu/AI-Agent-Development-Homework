@@ -1,0 +1,65 @@
+=== Ingesting 3 files from /Users/doru/Work/Projects/AI-Agent-Development-Homework/l4_homework/project/sample_docs ===
+  OK   contract_servicii.txt -> id=1 chunks=4
+  OK   factura_FAC-2026-042.txt -> id=2 chunks=2
+  OK   nda_acord.txt -> id=3 chunks=2
+
+=== Asking the agent ===
+
+>>> Ce clauze de reziliere avem în contracte și care e preavizul?
+Loading weights: 100%|██████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 199/199 [00:00<00:00, 6253.12it/s]
+<<< Am găsit clauze de reziliere în două documente. Iată sinteza:
+
+## Contract de servicii (`contract_servicii.txt`, chunk 2)
+
+**Art. 5 — Rezilierea contractului:**
+- **5.1 Denunțare unilaterală:** oricare parte poate denunța contractul cu **preaviz scris de 30 de zile calendaristice**, fără a invoca un motiv.
+- **5.2 Reziliere de plin drept:** fără punere în întârziere, dacă una dintre părți nu își îndeplinește obligațiile principale **mai mult de 60 de zile consecutive**.
+- **5.3 Efecte:** Prestatorul predă livrabilele finalizate, iar Beneficiarul achită contravaloarea muncii prestate până la data rezilierii.
+
+## Acord de confidențialitate / NDA (`nda_acord.txt`, chunk 1)
+
+- **Denunțare unilaterală:** oricare parte poate denunța acordul cu **preaviz de 15 zile**.
+- Obligațiile de confidențialitate **supraviețuiesc rezilierii încă 3 ani**.
+
+## Rezumat preavize
+
+| Document | Preaviz denunțare unilaterală | Reziliere pentru neexecutare |
+|---|---|---|
+| Contract servicii | 30 zile calendaristice | după 60 zile consecutive de neexecutare |
+| NDA | 15 zile | nespecificat explicit |
+
+Dacă vrei, pot verifica și efectele post-reziliere (ex. obligațiile reziduale de plată sau confidențialitate) în detaliu.
+
+>>> Care este totalul facturii FAC-2026-042 și ce TVA s-a aplicat?
+<<< **Factura FAC-2026-042:**
+
+- **Subtotal:** 10.000,00 EUR (factura_FAC-2026-042.txt, chunk 1)
+- **TVA aplicat:** 19% → 1.900,00 EUR (factura_FAC-2026-042.txt, chunk 1)
+- **Total de plată:** 11.900,00 EUR (factura_FAC-2026-042.txt, chunk 1)
+
+Factura a fost emisă pe 31.01.2026, cu scadență la 02.03.2026, în baza Contractului nr. 042/2026 (factura_FAC-2026-042.txt, chunk 0).
+
+>>> Ce penalități sunt menționate pentru încălcarea NDA-ului?
+<<< Penalitățile menționate pentru încălcarea NDA-ului sunt:
+
+- **Daune-interese minime de 50.000 EUR per incident** pentru încălcarea obligațiilor de confidențialitate (nda_acord.txt, chunk 1).
+- Partea Divulgatoare își păstrează dreptul de a solicita **daune suplimentare** peste acest minim (nda_acord.txt, chunk 1).
+
+Context relevant:
+- Obligațiile de confidențialitate **supraviețuiesc rezilierii încă 3 ani** (nda_acord.txt, chunk 1), deci penalitățile pot fi aplicate și în această perioadă post-contractuală.
+- Litigiile se soluționează la **instanțele din București**, sub legea română (nda_acord.txt, chunk 1).
+- Părțile implicate: SC Acme Software SRL (Divulgatoare) și SC Gamma Consulting SRL (Primitoare), acord din 1 februarie 2026 (nda_acord.txt, chunk 0).
+
+>>> Există o clauză de confidențialitate? Cât durează?
+<<< Da, există clauze de confidențialitate în două documente separate:
+
+**1. Contract de servicii (Art. 6)**
+- Părțile se obligă să păstreze confidențialitatea tuturor informațiilor schimbate în executarea contractului.
+- **Durată: 5 ani de la încetarea contractului** (contract_servicii.txt chunk 2).
+
+**2. Acord NDA separat** între SC Acme Software SRL și SC Gamma Consulting SRL, semnat la 1 februarie 2026 (nda_acord.txt chunk 0):
+- Acordul în sine este valabil **24 de luni de la semnare** (nda_acord.txt chunk 1).
+- **Obligațiile de confidențialitate supraviețuiesc rezilierii încă 3 ani suplimentari** (nda_acord.txt chunk 1).
+- Încălcarea atrage daune-interese minime de 50.000 EUR per incident (nda_acord.txt chunk 1).
+
+**Pe scurt:** dacă te referi la contractul de servicii → 5 ani după încetare. Dacă te referi la NDA → 24 luni acord + 3 ani supraviețuire a obligațiilor de confidențialitate (total până la 5 ani de protecție efectivă din momentul semnării, dacă acordul rulează full term).
