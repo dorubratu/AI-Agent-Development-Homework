@@ -57,23 +57,47 @@ class RAGAgent:
     # === NODES ===
 
     def node_refine(self, state: RAGAgentState) -> dict:
-        """
-        TODO: Rafinează query-ul dacă avem feedback de la Orchestrator.
-
-        Dacă state.feedback există:
-        1. Renderează prompt "rag_refine"
-        2. Apelează LLM
-        3. Parsează JSON în RefinedQuery.model_validate_json()
-        4. Return {"refined": refined_query}
-
-        Dacă nu există feedback:
-        - Return {"refined": RefinedQuery(query=state.query)}
-        """
+        """Rafinează query-ul dacă avem feedback de la Orchestrator."""
         logger.info(f"[REFINE] feedback={state.feedback is not None}")
 
-        # TODO: implementează
+        if not state.feedback:
+            return {"refined": RefinedQuery(query=state.query)}
 
-        return {"refined": RefinedQuery(query=state.query)}
+        # Construiește rezumatul a ce am găsit până acum
+        found_summary = ""
+        if state.result and state.result.results:
+            found_summary = "\n".join(
+                f"- [{r.file_name}] {r.summary or r.content[:100]}"
+                for r in state.result.results
+            )
+        else:
+            found_summary = "Nu s-au găsit rezultate relevante."
+
+        max_score = state.result.max_score if state.result else 0.0
+        avg_score = state.result.avg_score if state.result else 0.0
+        current_threshold = state.current_threshold or self.config.default_threshold
+
+        prompt = self.prompts.render(
+            "rag_refine",
+            original_query=state.query,
+            current_query=state.current_query,
+            found_summary=found_summary,
+            max_score=max_score,
+            avg_score=avg_score,
+            current_threshold=current_threshold,
+            can_answer=state.feedback.can_answer,
+            missing_info=state.feedback.missing_info,
+            suggestion=state.feedback.suggestion,
+        )
+
+        response = self.llm.generate_sync([{"role": "user", "content": prompt}])
+
+        match = re.search(r'```json\s*(.*?)\s*```', response, re.DOTALL)
+        json_str = match.group(1) if match else response.strip()
+        refined = RefinedQuery.model_validate_json(json_str)
+
+        logger.info(f"[REFINE] new query='{refined.query}', threshold={refined.threshold}")
+        return {"refined": refined}
 
     def node_search(self, state: RAGAgentState) -> dict:
         """Caută chunks similare în pgvector. COMPLET - nu modifica."""
@@ -88,17 +112,16 @@ class RAGAgent:
         with transaction() as db:
             rag = RAGService(db)
             results = rag.search(query, top_k=self.config.top_k, threshold=threshold)
-
-        # Transformă în SearchResultItem
-        items = [
-            SearchResultItem(
-                content=chunk.content,
-                summary=chunk.summary or "",
-                file_name=chunk.file_name,
-                score=score,
-            )
-            for chunk, score in results
-        ]
+            # Build items inside session to avoid DetachedInstanceError
+            items = [
+                SearchResultItem(
+                    content=chunk.content,
+                    summary=chunk.summary or "",
+                    file_name=chunk.file_name,
+                    score=score,
+                )
+                for chunk, score in results
+            ]
 
         # Calculează statistici
         scores = [item.score for item in items]

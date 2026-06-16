@@ -58,65 +58,93 @@ class NL2SQLAgent:
         }
 
     def node_generate_sql(self, state: NL2SQLState) -> dict:
-        """
-        TODO: Generează SQL.
-
-        1. Renderează prompt "nl2sql_generate"
-        2. Apelează LLM
-        3. Curăță răspunsul (remove ```sql blocks)
-        4. Return {"sql_query": ...}
-        """
+        """Generează SQL din întrebare naturală."""
         logger.info(f"[GENERATE] {state.question}")
 
-        # TODO: implementează
+        schema = state.schema_context
+        prompt = self.prompts.render(
+            "nl2sql_generate",
+            table_name=state.table_name,
+            table_description=schema.get("description", ""),
+            columns=schema.get("columns", {}),
+            business_rules=self.schema.get("rules", {}),
+            question=state.question,
+        )
 
-        return {"sql_query": "SELECT 1"}
+        response = self.llm.generate_sync([{"role": "user", "content": prompt}])
+
+        # Strip ```sql ... ``` or ``` ... ``` blocks
+        match = re.search(r'```(?:sql)?\s*(.*?)\s*```', response, re.DOTALL | re.IGNORECASE)
+        sql = match.group(1).strip() if match else response.strip()
+
+        logger.info(f"[GENERATE] sql={sql[:80]}...")
+        return {"sql_query": sql}
 
     def node_validate_sql(self, state: NL2SQLState) -> dict:
-        """
-        TODO: Validează SQL.
-
-        1. Check pentru SQL injection patterns
-        2. Parsează cu sqlparse
-        3. Verifică că e SELECT
-        4. Return {"is_valid": bool, "validation_error": str}
-        """
+        """Validează SQL-ul generat."""
         sql = state.sql_query
         logger.info(f"[VALIDATE] {sql[:50]}...")
 
-        # TODO: implementează
+        # Check for dangerous patterns
+        dangerous = ["DROP", "DELETE", "INSERT", "UPDATE", "TRUNCATE", "ALTER", "CREATE", "EXEC", ";--", "/*"]
+        sql_upper = sql.upper()
+        for pattern in dangerous:
+            if pattern in sql_upper:
+                return {"is_valid": False, "validation_error": f"Forbidden keyword: {pattern}"}
+
+        # Parse with sqlparse
+        parsed = sqlparse.parse(sql)
+        if not parsed:
+            return {"is_valid": False, "validation_error": "Could not parse SQL"}
+
+        stmt = parsed[0]
+        if stmt.get_type() != "SELECT":
+            return {"is_valid": False, "validation_error": f"Only SELECT is allowed, got: {stmt.get_type()}"}
 
         return {"is_valid": True, "validation_error": ""}
 
     def node_execute_sql(self, state: NL2SQLState) -> dict:
-        """
-        TODO: Execută SQL.
-
-        1. Folosește transaction() + session.execute(text(sql))
-        2. Convertește la DataFrame: df = pd.DataFrame(result.mappings().all())
-        3. Return {"result": df, "status": "success"} sau {"execution_error": ...}
-        """
+        """Execută SQL-ul validat și returnează rezultat ca DataFrame."""
         logger.info("[EXECUTE]")
 
-        # TODO: implementează
+        from database import transaction
+        from sqlalchemy import text
 
-        return {"result": pd.DataFrame(), "execution_error": "TODO", "status": "failed"}
+        try:
+            with transaction() as session:
+                result = session.execute(text(state.sql_query))
+                df = pd.DataFrame(result.mappings().all())
+            logger.info(f"[EXECUTE] success, {len(df)} rows")
+            return {"result": df, "execution_error": "", "status": "success"}
+        except Exception as e:
+            logger.error(f"[EXECUTE] error: {e}")
+            return {"result": pd.DataFrame(), "execution_error": str(e), "status": "failed"}
 
     def node_handle_error(self, state: NL2SQLState) -> dict:
-        """
-        TODO: Handle error + retry.
+        """Gestionează eroarea și încearcă să corecteze SQL-ul."""
+        new_retry = state.retry_count + 1
+        logger.info(f"[ERROR] retry {new_retry}/{state.max_retries}")
 
-        1. Increment retry_count
-        2. Dacă >= max_retries: return {"status": "failed"}
-        3. Renderează prompt "nl2sql_error"
-        4. Apelează LLM pentru SQL corectat
-        5. Return {"sql_query": new_sql, "retry_count": ...}
-        """
-        logger.info("[ERROR]")
+        if new_retry >= state.max_retries:
+            return {"retry_count": new_retry, "status": "failed"}
 
-        # TODO: implementează
+        error_message = state.execution_error or state.validation_error
+        prompt = self.prompts.render(
+            "nl2sql_error",
+            table_name=state.table_name,
+            question=state.question,
+            failed_sql=state.sql_query,
+            error_message=error_message,
+            columns=state.schema_context.get("columns", {}),
+        )
 
-        return {"retry_count": state.retry_count + 1, "status": "failed"}
+        response = self.llm.generate_sync([{"role": "user", "content": prompt}])
+
+        match = re.search(r'```(?:sql)?\s*(.*?)\s*```', response, re.DOTALL | re.IGNORECASE)
+        new_sql = match.group(1).strip() if match else response.strip()
+
+        logger.info(f"[ERROR] corrected sql={new_sql[:80]}...")
+        return {"sql_query": new_sql, "retry_count": new_retry, "is_valid": False, "validation_error": "", "execution_error": ""}
 
     # === ROUTING ===
 

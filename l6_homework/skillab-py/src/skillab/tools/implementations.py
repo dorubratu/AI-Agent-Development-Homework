@@ -24,10 +24,9 @@ def join_data(params: JoinDataParams) -> pd.DataFrame:
     Returns:
         DataFrame rezultat după join
     """
-    # TODO: implementează
-    # Hint: pd.merge(params.input_dfs[0], params.input_dfs[1],
-    #                 left_on=params.left_key, right_on=params.right_key, how=params.how)
-    raise NotImplementedError("join_data nu este implementat")
+    left_df = params.input_dfs[0]
+    right_df = params.input_dfs[1]
+    return pd.merge(left_df, right_df, left_on=params.left_key, right_on=params.right_key, how=params.how)
 
 
 @register_tool
@@ -45,7 +44,33 @@ def filter_data(params: FilterDataParams) -> pd.DataFrame:
     Returns:
         DataFrame filtrat
     """
-    # TODO: implementează
-    # Hint: construiește un mask pe baza params.operator (==, !=, >, <, >=, <=, contains)
-    #       și returnează df[mask]
-    raise NotImplementedError("filter_data nu este implementat")
+    df = params.input_dfs[0]
+    col = df[params.column]
+    value = params.value
+
+    # Try numeric coercion for comparison operators
+    if params.operator in (">", "<", ">=", "<="):
+        try:
+            value = float(value)
+            col = pd.to_numeric(col, errors="coerce")
+        except (ValueError, TypeError):
+            pass
+
+    if params.operator == "==":
+        mask = col == value
+    elif params.operator == "!=":
+        mask = col != value
+    elif params.operator == ">":
+        mask = col > value
+    elif params.operator == "<":
+        mask = col < value
+    elif params.operator == ">=":
+        mask = col >= value
+    elif params.operator == "<=":
+        mask = col <= value
+    elif params.operator == "contains":
+        mask = col.astype(str).str.contains(value, case=False, na=False)
+    else:
+        raise ValueError(f"Operator necunoscut: {params.operator}")
+
+    return df[mask]

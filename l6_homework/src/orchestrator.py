@@ -70,52 +70,61 @@ class Orchestrator:
         )
 
         return {
-            "rag_result": rag_result.result,
+            "rag_result": rag_result["result"],
             "iteration": state.iteration + 1,
         }
 
     def node_evaluate(self, state: OrchestratorState) -> dict:
-        """
-        TODO: Evaluează dacă putem răspunde cu contextul găsit.
-
-        1. Construiește context din state.rag_result.results
-        2. Renderează prompt "rag_evaluate"
-        3. Apelează LLM
-        4. Parsează în OrchestratorFeedback.model_validate_json()
-        5. Return {"feedback": feedback}
-        """
+        """Evaluează dacă contextul RAG e suficient pentru a răspunde."""
         logger.info(f"[EVALUATE] iter {state.iteration}")
 
-        # TODO: implementează
+        results = state.rag_result.results if state.rag_result else []
+        context = "\n\n".join(f"[{r.file_name}]\n{r.content}" for r in results)
 
-        return {"feedback": OrchestratorFeedback(can_answer=True)}
+        prompt = self.prompts.render(
+            "rag_evaluate",
+            query=state.query,
+            context=context,
+            max_score=state.rag_result.max_score if state.rag_result else 0.0,
+            avg_score=state.rag_result.avg_score if state.rag_result else 0.0,
+        )
+
+        response = self.llm.generate_sync([{"role": "user", "content": prompt}])
+
+        import re
+        match = re.search(r'```json\s*(.*?)\s*```', response, re.DOTALL)
+        json_str = match.group(1) if match else response.strip()
+        feedback = OrchestratorFeedback.model_validate_json(json_str)
+
+        logger.info(f"[EVALUATE] can_answer={feedback.can_answer}")
+        return {"feedback": feedback}
 
     def node_answer(self, state: OrchestratorState) -> dict:
-        """
-        TODO: Generează răspunsul final.
-
-        1. Construiește context din state.rag_result.results:
-           context = "\\n\\n".join(f"[{r.file_name}]\\n{r.content}" for r in results)
-
-        2. Renderează prompt "rag_answer" cu:
-           - query=state.query
-           - context=context
-
-        3. Apelează LLM:
-           answer = self.llm.generate_sync([{"role": "user", "content": prompt}])
-
-        4. Determină status:
-           - "success" dacă feedback.can_answer == True
-           - "partial" dacă am răspuns dar fără can_answer
-           - "failed" dacă nu avem rezultate
-
-        5. Return {"answer": answer, "status": status}
-        """
+        """Generează răspunsul final bazat pe chunks-urile RAG."""
         logger.info("[ANSWER]")
 
-        # TODO: implementează
+        results = state.rag_result.results if state.rag_result else []
 
-        return {"answer": "TODO", "status": "failed"}
+        if not results:
+            return {"answer": "Nu am găsit informații relevante pentru întrebarea ta.", "status": "failed"}
+
+        context = "\n\n".join(f"[{r.file_name}]\n{r.content}" for r in results)
+
+        prompt = self.prompts.render(
+            "rag_answer",
+            query=state.query,
+            context=context,
+        )
+
+        answer = self.llm.generate_sync([{"role": "user", "content": prompt}])
+
+        if state.feedback and state.feedback.can_answer:
+            status = "success"
+        else:
+            status = "partial"
+
+        logger.info(f"[ANSWER] status={status}")
+        return {"answer": answer, "status": status}
 
     # === ROUTING ===
 

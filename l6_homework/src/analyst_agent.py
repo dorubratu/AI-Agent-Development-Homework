@@ -68,30 +68,36 @@ class AnalystAgent:
     # === NODES ===
 
     def node_make_plan(self, state: AnalystState) -> dict:
-        """
-        TODO: Creează plan.
-
-        1. Renderează prompt "analyst_plan" cu tables_info și tools_catalog
-        2. Apelează LLM
-        3. Parsează JSON
-        4. Return {"reasoning": ..., "plan": [...], "current_step": 0}
-
-        Hint pentru prompt:
-            - tables_info: lista de tabele disponibile
-            - tools_catalog: tools disponibile (join_data, filter_data)
-
-        Plan format:
-            [
-                {"id": "q1", "action": "query", "table": "achizitii", "sub_question": "..."},
-                {"id": "q2", "action": "query", "table": "anunturi", "sub_question": "..."},
-                {"id": "joined", "action": "tool", "tool_name": "join_data", "input_steps": ["q1", "q2"], "params": {...}}
-            ]
-        """
+        """Creează planul de execuție pentru întrebare."""
+        import re
         logger.info(f"[PLAN] {state.question}")
 
-        # TODO: implementează
+        prompt = self.prompts.render(
+            "analyst_plan",
+            tables=self.tables_info,
+            tools_catalog=self.tools_catalog,
+            history=None,
+            question=state.question,
+        )
 
-        return {"reasoning": "TODO", "plan": [], "current_step": 0, "slices": {}, "step_results": []}
+        response = self.llm.generate_sync([{"role": "user", "content": prompt}])
+
+        match = re.search(r'```json\s*(.*?)\s*```', response, re.DOTALL)
+        json_str = match.group(1) if match else response.strip()
+        data = json.loads(json_str)
+
+        reasoning = data.get("reasoning", "")
+        raw_steps = data.get("steps", [])
+
+        plan = []
+        for s in raw_steps:
+            if s.get("action") == "query":
+                plan.append(QueryStep(**s))
+            elif s.get("action") == "tool":
+                plan.append(ToolStep(**s))
+
+        logger.info(f"[PLAN] {len(plan)} steps: {[s.id for s in plan]}")
+        return {"reasoning": reasoning, "plan": plan, "current_step": 0, "slices": {}, "step_results": []}
 
     def node_execute_step(self, state: AnalystState) -> dict:
         """Execută pasul curent din plan și stochează rezultatul în slices."""
@@ -148,13 +154,13 @@ class AnalystAgent:
                 error=str(e),
             ), None
 
-        if nl2sql_result.status != "success":
+        if nl2sql_result["status"] != "success":
             return StepResult(
                 step_id=step.id,
                 action=step.action,
                 description=step.sub_question,
                 status="failed",
-                error=nl2sql_result.execution_error or nl2sql_result.validation_error,
+                error=nl2sql_result.get("execution_error") or nl2sql_result.get("validation_error") or "",
             ), None
 
         return StepResult(
@@ -162,8 +168,8 @@ class AnalystAgent:
             action=step.action,
             description=step.sub_question,
             status="success",
-            row_count=len(nl2sql_result.result),
-        ), nl2sql_result.result
+            row_count=len(nl2sql_result["result"]),
+        ), nl2sql_result["result"]
 
     def _execute_tool(
         self,
@@ -216,21 +222,36 @@ class AnalystAgent:
         ), result_df
 
     def node_synthesize(self, state: AnalystState) -> dict:
-        """
-        TODO: Sintetizează răspunsul.
-
-        1. Renderează prompt "analyst_synthesize" cu results
-        2. Apelează LLM
-        3. Return {"answer": ..., "status": "success" | "failed"}
-
-        Hint: ultimul slice (sau cel specificat) conține rezultatul final
-            final_df = state.slices[state.plan[-1].id]
-        """
+        """Sintetizează răspunsul final din rezultatele execuției."""
         logger.info("[SYNTHESIZE]")
 
-        # TODO: implementează
+        if not state.plan:
+            return {"answer": "Nu am putut crea un plan de execuție.", "status": "failed"}
 
-        return {"answer": "TODO", "status": "failed"}
+        # Get the final slice (last step's result)
+        final_df = None
+        final_data = ""
+        if state.plan:
+            last_id = state.plan[-1].id
+            final_df = state.slices.get(last_id)
+            if final_df is not None and not final_df.empty:
+                final_data = final_df.head(10).to_string(index=False)
+
+        prompt = self.prompts.render(
+            "analyst_synthesize",
+            question=state.question,
+            reasoning=state.reasoning,
+            results=state.step_results,
+            final_data=final_data,
+        )
+
+        answer = self.llm.generate_sync([{"role": "user", "content": prompt}])
+
+        any_success = any(r.status == "success" for r in state.step_results)
+        status = "success" if any_success else "failed"
+
+        logger.info(f"[SYNTHESIZE] status={status}")
+        return {"answer": answer, "status": status}
 
     # === ROUTING ===
 
