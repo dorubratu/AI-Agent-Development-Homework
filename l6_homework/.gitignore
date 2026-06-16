@@ -1,0 +1,15 @@
+# Environment
+.env
+__pycache__/
+*.pyc
+
+# IDE
+.vscode/
+.idea/
+
+# Data (prea mare pentru git — depășesc limita GitHub de 100MB)
+data/*.dump
+data/documents-sql/achizitiidirecte2018t2.xlsx
+
+# Alembic
+*.db
