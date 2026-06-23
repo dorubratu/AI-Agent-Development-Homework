@@ -1,0 +1,95 @@
+==============================================================
+ L8 HOMEWORK — RUN OUTPUT
+ Generated: 2026-06-23 19:28:13
+ Model: claude-haiku-4-5  |  DB: postgres@5433 (135 chunks)
+==============================================================
+
+##############################################################
+# TASK 1 — CONVERSATION MEMORY (PostgreSQL, LangGraph)
+##############################################################
+Sesiune: 'demo-andrei'  (memorie goala la start: 0 mesaje)
+
+--- TURA 1 ---
+Q: Ce contact are DataPro?
+A: Conform documentului **client_datapro_sa.docx**, DataPro SA are următoarele contacte:  - **Email principal:** maria.ionescu@datapro.ro - **Telefon:** 0722-234-567
+status: success | mesaje persistate: 2
+
+--- TURA 2 (alta sesiune-restart: instanta noua de PersistentMemory) ---
+Q: Care e totalul facturilor TechSoft?
+A: Nu am informații despre totalul facturilor TechSoft în documentele disponibile.   Documentul **contract_001_techsoft_2024.docx** conține doar detaliile contractuale (părțile implicate și informații ge
+status: partial | mesaje persistate: 4
+
+Istoric incarcat din DB dupa restart:
+  [user     ] Ce contact are DataPro?
+  [assistant] Conform documentului **client_datapro_sa.docx**, DataPro SA are următo
+  [user     ] Care e totalul facturilor TechSoft?
+  [assistant] Nu am informații despre totalul facturilor TechSoft în documentele dis
+
+=> Memoria a supravietuit 'restart-ului' (instanta noua) si traieste in PostgreSQL.
+
+##############################################################
+# TASK 2 — PROMPT CACHING (Anthropic, cache_control: ephemeral)
+##############################################################
+Model: claude-haiku-4-5-20251001
+
+======================================================================
+FĂRĂ PROMPT CACHE (fiecare request plătește prefixul integral)
+======================================================================
+  q=Care e subiectul contractului?   input= 16065 read=     0 lat=1.99s
+  q=Ce penalități sunt prevăzute?    input= 16066 read=     0 lat=2.20s
+  q=Care sunt termenele de plată?    input= 16065 read=     0 lat=2.43s
+  q=Ce înseamnă SLA în acest contr   input= 16067 read=     0 lat=2.53s
+
+======================================================================
+CU PROMPT CACHE (cache_control: ephemeral pe prefixul static)
+======================================================================
+  q=Care e subiectul contractului?   input=    15 create=     0 read= 16050 lat=1.90s  HIT  (citește cache)
+  q=Ce penalități sunt prevăzute?    input=    16 create=     0 read= 16050 lat=2.08s  HIT  (citește cache)
+  q=Care sunt termenele de plată?    input=    15 create=     0 read= 16050 lat=2.38s  HIT  (citește cache)
+  q=Ce înseamnă SLA în acest contr   input=    17 create=     0 read= 16050 lat=2.39s  HIT  (citește cache)
+
+======================================================================
+SUMAR
+======================================================================
+  Tokeni input full (fără cache) : 64263
+  Tokeni serviți din cache       : 64200
+  Cost fără cache  : $0.066433
+  Cost cu cache    : $0.008653
+  Reducere cost    : 87.0%
+  Latență totală fără cache : 9.14s
+  Latență totală cu cache   : 8.76s
+  Reducere latență          : 4.2%
+
+##############################################################
+# TASK 3 — INTENT CLASSIFIER (TF-IDF + LogisticRegression vs LLM)
+##############################################################
+Model salvat la /Users/doru/Work/Projects/AI-Agent-Development-Homework/l8_homework/agent/models/intent_clf.joblib
+
+Antrenat pe 45 exemple.
+Accuracy pe test (15 exemple): 100.0%
+
+Exemple de predicții:
+  'Caută facturile de la TechSoft'              → search     {np.str_('extract'): 0.109, np.str_('search'): 0.813, np.str_('summarize'): 0.077}
+  'Extrage suma totală din contract'            → extract    {np.str_('extract'): 0.817, np.str_('search'): 0.107, np.str_('summarize'): 0.076}
+  'Rezumă raportul trimestrial'                 → summarize  {np.str_('extract'): 0.09, np.str_('search'): 0.101, np.str_('summarize'): 0.809}
+  'Ce contact are DataPro?'                     → extract    {np.str_('extract'): 0.824, np.str_('search'): 0.093, np.str_('summarize'): 0.083}
+
+Set de test: 15 queries
+
+LLM: claude-haiku-4-5-20251001 (rulez 15 clasificări...)
+
+==========================================================================
+Metric                LLM (Claude Haiku)        scikit-learn (local)      
+==========================================================================
+Accuracy               100.0%                    100.0%
+Latență medie/query     1340.3 ms                  0.271 ms
+Cost total            $0.002462                 $0.000000  (local, $0)
+--------------------------------------------------------------------------
+  → scikit-learn e ~4,945× mai rapid și costă $0.
+
+Concluzie:
+  • Pentru intenții fixe și bine definite (search/extract/summarize),
+    un clasificator local TF-IDF + LogisticRegression e ideal: rapid,
+    gratuit, predictibil. Folosește-l ca router de intenție înainte de LLM.
+  • LLM-ul rămâne util pentru clase noi/ambigue sau zero-shot, dar
+    adaugă latență (sute de ms–secunde) și cost per request.

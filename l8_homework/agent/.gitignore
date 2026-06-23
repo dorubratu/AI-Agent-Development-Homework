@@ -1,0 +1,61 @@
+# Environment / secrets
+.env
+.env.local
+*.env
+!.env.example
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# Virtual envs
+.venv/
+venv/
+env/
+
+# Build / packaging (skillab-py installed with pip install -e)
+build/
+dist/
+*.egg-info/
+.eggs/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Test / coverage / linters
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+.tox/
+.mypy_cache/
+.ruff_cache/
+
+# Logs / local databases
+*.log
+*.sqlite
+*.sqlite3
+*.db
+
+# Data prea mare pentru git (depășesc limita GitHub de 100MB)
+# NOTE: schema/business JSON din data/nl2sql_agent/ sunt păstrate — agenții au nevoie de ele.
+data/*.dump
+data/*.sql
+data/*.csv
+data/documents-sql/achizitiidirecte2018t2.xlsx
+
+# HuggingFace model cache (descărcat la runtime de sentence-transformers)
+.cache/
+
+# Arhive
+*.zip
