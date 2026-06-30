@@ -1,0 +1,17 @@
+name: tool_descriptions
+description: Descrierile (pentru LLM) ale tool-urilor MCP expuse de server.
+
+data_analyst: |
+  Răspunde la întrebări analitice pe datele tabelare structurate (SQL).
+  Agentul Data Analyst (din L6) construiește un plan, generează SQL prin NL2SQL
+  pe tabelele de achiziții publice (achizitii_directe, anunturi_initiere), execută
+  pașii și sintetizează un răspuns în limbaj natural.
+  Folosește-l pentru întrebări precum: top furnizori după valoare, totaluri,
+  agregări, comparații între tabele.
+
+orchestrator: |
+  Răspunde la întrebări pe baza documentelor (RAG). Agentul Orchestrator (Supervisor,
+  din L6) coordonează un RAG Agent: caută chunk-uri relevante, evaluează dacă sunt
+  suficiente, rafinează căutarea dacă e nevoie și generează un răspuns citat din
+  documente (facturi, contracte, clienți, rapoarte).
+  Folosește-l pentru întrebări despre conținutul documentelor.

@@ -1,0 +1,12 @@
+# MCP server + client
+mcp>=1.0
+
+# Config & prompts
+python-dotenv
+pyyaml
+
+# Agenții L6 sunt importați din ../l6_homework (refolosire de cod).
+# Pentru a-i rula REAL, instalează și dependențele din l6_homework/requirements.txt:
+#   pip install -r ../l6_homework/requirements.txt
+# (sqlalchemy, psycopg2-binary, pgvector, pandas, sentence-transformers,
+#  langgraph, openai / google-generativeai sau anthropic, etc.)

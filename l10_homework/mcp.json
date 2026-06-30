@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "l6-agents": {
+      "command": "python",
+      "args": ["-m", "src.mcp_server", "stdio"],
+      "cwd": "."
+    }
+  }
+}
